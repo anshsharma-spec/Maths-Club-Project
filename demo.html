@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration form | AI-Powered Auth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.0/dist/vanilla-tilt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --hue: 245;
+            --primary: hsl(var(--hue), 70%, 55%);
+            --primary-dark: hsl(var(--hue), 80%, 45%);
+            --bg-dark: #0f0f1a;
+            --bg-light: #f8f9ff;
+            --text-dark: #e2e8f0;
+            --text-light: #1e293b;
+            --card-dark: rgba(20, 20, 35, 0.7);
+            --card-light: rgba(255, 255, 255, 0.85);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --glow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        [data-theme="light"] {
+            --bg-dark: var(--bg-light);
+            --text-dark: var(--text-light);
+            --card-dark: var(--card-light);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -2;
+            background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460, #1e3a5f);
+            background-size: 400% 400%;
+            animation: gradient 20s ease infinite;
+            filter: blur(1px);
+        }
+
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .noise {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.05"/></svg>');
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        .login-wrapper {
+            z-index: 10;
+            perspective: 1000px;
+        }
+
+        .login-card {
+            width: 420px;
+            padding: 3rem;
+            background: var(--card-dark);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), var(--glow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .login-card:hover::before {
+            opacity: 1;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+            transition: transform 0.4s ease;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(99,102,241,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 150px;
+            background: rgba(255,255,255,0.3);
+            transform: rotate(30deg);
+            top: -50px;
+            left: -50px;
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0%, 100% { transform: translateX(-100px) rotate(30deg); }
+            50% { transform: translateX(200px) rotate(30deg); }
+        }
+
+        .logo h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.8rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1.1rem 1rem 1.1rem 3.2rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.15);
+            box-shadow: var(--glow), 0 0 0 6px rgba(99,102,241,0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus ~ .form-icon {
+            color: var(--primary);
+            transform: translateY(-50%) scale(1.3);
+        }
+
+        .password-strength {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .password-strength.show {
+            opacity: 1;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.4s ease;
+            border-radius: 2px;
+        }
+
+        .strength-text {
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .strength-text.show {
+            opacity: 1;
+        }
+
+        .biometric-btn {
+            position: absolute;
+            right: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(16,185,129,0.2);
+            border: 2px solid var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .biometric-btn.show {
+            opacity: 1;
+        }
+
+        .biometric-btn:hover {
+            background: var(--success);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.4s ease;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(99,102,241,0.4);
+        }
+
+        .biometric-scan {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(16,185,129,0.3) 0%, transparent 70%);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .scan-ring {
+            width: 150px;
+            height: 150px;
+            border: 4px solid transparent;
+            border-top: 4px solid var(--success);
+            border-radius: 50%;
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                width: 95%;
+                padding: 2rem 1.5rem;
+            }
+            .logo h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+    <div class="noise"></div>
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="login-wrapper">
+        <div class="login-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </div>
+
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+                <h1>SecureLogin Pro</h1>
+                <p>AI-Powered Authentication</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="email" class="form-control" placeholder="you@example.com" required>
+                    <i class="fas fa-envelope form-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                    <i class="fas fa-lock form-icon"></i>
+                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                    <div class="biometric-btn" id="biometricBtn">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                </div>
+
+                <div class="password-strength" id="strengthMeter">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <div class="strength-text" id="strengthText"></div>
+
+                <div class="form-options" style="display:flex;justify-content:space-between;margin:1.5rem 0;font-size:0.9rem;">
+                    <label class="checkbox-container">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                        Stay signed in
+                    </label>
+                    <a href="#" style="color:var(--primary);text-decoration:none;">Forgot?</a>
+                </div>
+
+                <button type="submit" class="btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Secure Sign In
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:2rem;">
+                <p style="color:rgba(255,255,255,0.7);font-size:0.9rem;">
+                    Or use <span style="color:var(--primary);cursor:pointer;" id="voiceHint">voice login</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="biometric-scan" id="biometricScan">
+        <div class="scan-ring"></div>
+        <p style="margin-top:1rem;">Authenticating...</p>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', currentTheme);
+        themeToggle.innerHTML = currentTheme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+
+        themeToggle.addEventListener('click', () => {
+            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.innerHTML = newTheme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+            themeToggle.style.transform = 'rotate(360deg)';
+            setTimeout(() => themeToggle.style.transform = '', 400);
+        });
+
+        const passwordInput = document.getElementById('password');
+        const strengthMeter = document.getElementById('strengthMeter');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value;
+            const result = zxcvbn(val);
+            const score = result.score;
+            const feedback = result.feedback.warning || 'Strong password';
+
+            strengthMeter.classList.add('show');
+            strengthText.classList.add('show');
+
+            const colors = ['#ef4444', '#f59e0b', '#facc15', '#10b981', '#10b981'];
+            const labels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+            strengthBar.style.width = `${(score + 1) * 20}%`;
+            strengthBar.style.background = colors[score];
+            strengthText.textContent = labels[score] + (score < 4 ? ' — ' + feedback : '');
+            strengthText.style.color = colors[score];
+        });
+
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        passwordInput.addEventListener('input', () => {
+            const biometricBtn = document.getElementById('biometricBtn');
+            if (zxcvbn(passwordInput.value).score >= 3) {
+                biometricBtn.classList.add('show');
+            } else {
+                biometricBtn.classList.remove('show');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('.btn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                document.getElementById('biometricScan').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2500);
+            }, 1800);
+        });
+
+        document.getElementById('voiceHint').addEventListener('click', () => {
+            alert('Voice login coming soon! Use your fingerprint or face ID.');
+        });
+
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const mouse = { x: 0, y: 0 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = `hsla(${245 + Math.random() * 60}, 70%, 60%, 0.5)`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const force = 50 / (distance * distance);
+                if (distance < 100) {
+                    this.speedX += dx * force;
+                    this.speedY += dy * force;
+                }
+
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(15, 15, 26, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js';
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
